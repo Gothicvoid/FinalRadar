@@ -148,6 +148,36 @@ public class Activity_Main extends AppCompatActivity {
             }
         };
 
+        smsBR = new SMSBroadcastReceiver();
+        smsBR.setOnReceivedMessageListener(new SMSBroadcastReceiver.MessageListener() {
+            @Override
+            public void OnReceived(String sender, String body) {
+                sender = sender.substring(3,sender.length());
+                if(body.equals("where are you?") && mlocation != null){
+                    double lat = mlocation.getLatitude();
+                    double lng = mlocation.getLongitude();
+                    //String loc = Double.toString(lat) + "/" + Double.toString(lng);
+                    String loc = "isl" + Double.toString(lat) + "/" + Double.toString(lng);
+                    SmsManager manager = SmsManager.getDefault();
+                    ArrayList<String> list = manager.divideMessage(loc);
+                    for(String text:list){
+                        manager.sendTextMessage(sender, null, text, null, null);
+                    }
+                } else if(body.substring(0,3).equals("isl")){
+                    int j;
+                    String n;
+                    for(j = 0; j != friends.size(); j++){
+                        n = friends.get(j).getNum();
+                        if (n.equals(sender)) DrawLine(getLoc(body),true);
+                    }
+                    for(j = 0; j != foes.size(); j++){
+                        n = foes.get(j).getNum();
+                        if (n.equals(sender)) DrawLine(getLoc(body),false);
+                    }
+                }
+            }
+        });
+
         final ImageView imgPic = (ImageView)findViewById(R.id.imageview_sweep);
         myAnimation = AnimationUtils.loadAnimation(this, R.anim.rotate_indefinitely);
 
@@ -178,34 +208,6 @@ public class Activity_Main extends AppCompatActivity {
                         manager.sendTextMessage(phone, null, text, null, null);
                     }
                 }
-                smsBR = new SMSBroadcastReceiver();
-                smsBR.setOnReceivedMessageListener(new SMSBroadcastReceiver.MessageListener() {
-                    @Override
-                    public void OnReceived(String sender, String body) {
-                        if(body.equals("where are you?") && mlocation != null){
-                            double lat = mlocation.getLatitude();
-                            double lng = mlocation.getLongitude();
-                            String loc = "isl" + Double.toString(lat) + "/" + Double.toString(lng);
-                            SmsManager manager = SmsManager.getDefault();
-                            ArrayList<String> list = manager.divideMessage(loc);
-                            for(String text:list){
-                                manager.sendTextMessage(sender, null, text, null, null);
-                            }
-                        } else if(body.substring(0,3).equals("isl")){
-                            int j;
-                            String n;
-                            for(j = 0; j != friends.size(); j++){
-                                n = "+86" + friends.get(j).getNum();
-                                if (n.equals(sender)) DrawLine(getLoc(body),true);
-                            }
-                            for(j = 0; j != foes.size(); j++){
-                                n = "+86" + foes.get(j).getNum();
-                                if (n.equals(sender)) DrawLine(getLoc(body),false);
-                            }
-                            smsBR.abortBroadcast();   //中断广播
-                        }
-                    }
-                });
             }
         });
 
